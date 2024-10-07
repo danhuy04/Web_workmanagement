@@ -37,7 +37,6 @@ public class WebSecurityConfiguration {
                         .requestMatchers("/api/auth/**").hasAnyAuthority(UserRole.ADMIN.name())
                         .requestMatchers("/api/employee/**").hasAnyAuthority(UserRole.EMPLOYEE.name())
                         .anyRequest().authenticated()).sessionManagement(manager ->manager.sessionCreationPolicy(STATELESS))
-                .authenticationProvider(authenticationFilter()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
