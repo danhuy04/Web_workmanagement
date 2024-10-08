@@ -65,4 +65,16 @@ public class User implements UserDetails {
         return true;
     }
 
+    public void setEmail(String mail) {
+        
+    }
+
+    public void setUserRole(UserRole userRole) {
+    }
+
+    public void setName(String admin) {
+    }
+
+    public void setPassword(String admin) {
+    }
 }

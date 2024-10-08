@@ -2,6 +2,8 @@ package com.example.Task_SpringBoot.services.auth;
 
 
 import com.example.Task_SpringBoot.Repositories.UserRepository;
+import com.example.Task_SpringBoot.dto.SignupRequest;
+import com.example.Task_SpringBoot.dto.UserDto;
 import com.example.Task_SpringBoot.entities.User;
 import com.example.Task_SpringBoot.enums.UserRole;
 import jakarta.annotation.PostConstruct;
@@ -13,7 +15,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
 
 
@@ -31,5 +33,21 @@ public class AuthServiceImpl implements AuthService{
         }else {
             System.out.print("Admin account already exit!");
         }
+    }
+
+    @Override
+    public UserDto signupUser(SignupRequest signupRequest) {
+        User user = new User();
+        user.setEmail(signupRequest.getEmail());
+        user.setName(signupRequest.getName());
+        user.setPassword(new BCryptPasswordEncoder().encode(signupRequest.getPassword()));
+        user.setUserRole(UserRole.EMPLOYEE);
+        User createdUser = userRepository.save((user));
+        return createdUser.getUSerDto();
+
+    }
+    @Override
+    public boolean hasUserWithEmail(String email) {
+        return userRepository.findFirstByEmail(email).isPresent();
     }
 }
