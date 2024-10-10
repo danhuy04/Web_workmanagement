@@ -4,16 +4,11 @@ import com.example.Task_SpringBoot.enums.UserRole;
 import lombok.Data;
 
 @Data
-public class UserDto {
+public class AuthenticationResponse {
 
-    private Long id;
+    private String jwt;
 
-    private String name;
-
-    private String email;
-
-    private String password;
+    private Long userID;
 
     private UserRole userRole;
-
 }

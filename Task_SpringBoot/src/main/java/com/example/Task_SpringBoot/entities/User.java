@@ -1,5 +1,6 @@
 package com.example.Task_SpringBoot.entities;
 
+import com.example.Task_SpringBoot.dto.UserDto;
 import com.example.Task_SpringBoot.enums.UserRole;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +20,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     private String name;
@@ -35,11 +37,6 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(userRole.name()));
     }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
 
     @Override
     public String getUsername() {
@@ -50,6 +47,7 @@ public class User implements UserDetails {
     public boolean isAccountNonExpired() {
         return true;
     }
+
     @Override
     public boolean isAccountNonLocked() {
         return true;
@@ -65,16 +63,13 @@ public class User implements UserDetails {
         return true;
     }
 
-    public void setEmail(String mail) {
-        
+    public UserDto getUserDto() {
+        UserDto userDto = new UserDto();
+        userDto.setId(id);
+        userDto.setName(name);
+        userDto.setEmail(email);
+        userDto.setUserRole(userRole);
+        return userDto;
     }
 
-    public void setUserRole(UserRole userRole) {
-    }
-
-    public void setName(String admin) {
-    }
-
-    public void setPassword(String admin) {
-    }
 }
