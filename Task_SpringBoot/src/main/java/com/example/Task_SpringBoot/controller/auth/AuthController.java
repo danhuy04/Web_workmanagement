@@ -22,48 +22,62 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
-
+@RequiredArgsConstructor // Lombok tự động tạo constructor với tất cả các tham số là final,
 public class AuthController {
 
     private final AuthService authService;
-
     private final UserRepository userRepository;
-
     private final JwtUtil jwtUtil;
-
-    private UserService userService;
-
+    private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
-
-    @PostMapping("/signup")
+    // Đăng ký người dùng mới
+    @PostMapping("/signup") //Định nghĩa endpoint cho yêu cầu đăng ký.
+    //Nhận yêu cầu đăng ký từ client, chuyển đổi thành đối tượng SignupRequest.
     public ResponseEntity<?> signupUser(@RequestBody SignupRequest signupRequest) {
+        //authService.hasUserWithEmail để kiểm tra xem có người dùng nào đã sử dụng email đó hay chưa
         if (authService.hasUserWithEmail(signupRequest.getEmail()))
-            return  ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("User already exits with this email");
+            // Nếu có, trả về mã lỗi NOT_ACCEPTABLE.
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("User already exists with this email");
+
+        //Nếu email chưa tồn tại, gọi authService.signupUser để tạo người dùng mới và trả về UserDto.
         UserDto createUserDto = authService.signupUser(signupRequest);
         if (createUserDto == null)
+            // Nếu người dùng không được tạo thành công, trả về mã lỗi BAD_REQUEST
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not created");
-        return  ResponseEntity.status(HttpStatus.CREATED).body(createUserDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createUserDto);
     }
-    public AuthenticationResponse login(@RequestBody AuthenticationRequest authenticationRequest){
+
+    // Đăng nhập người dùng
+    @PostMapping("/login") //Định nghĩa endpoint cho yêu cầu đăng nhập.
+    // AuthenticationRequest chứa địa chỉ email và mật khẩu của người dùng muốn đăng nhập
+    //@RequestBody: Annotation này cho biết rằng dữ liệu yêu cầu từ client sẽ được chuyển đổi thành đối tượng AuthenticationRequest
+    public AuthenticationResponse login(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
+            //Xác thực người dùng
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
                     authenticationRequest.getPassword()));
-        }catch (BadCredentialsException e){
-            throw new BadCredentialsException("Incorrect name of password");
+            // Nếu thông tin đăng nhập không chính xác, ném ngoại lệ BadCredentialsException
+        } catch (BadCredentialsException e) {
+            throw new BadCredentialsException("Incorrect username or password");
         }
+                                    // userService.userDetailsService().loadUserByUsername để lấy thông tin người dùng từ email.
         final UserDetails userDetails = userService.userDetailsService().loadUserByUsername(authenticationRequest.getEmail());
         Optional<User> optionalUser = userRepository.findFirstByEmail(authenticationRequest.getEmail());
+
+                            //jwtUtil.generateToken để tạo JSON Web Token
         final String jwtToken = jwtUtil.generateToken(userDetails);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse();
-        if (optionalUser.isPresent()){
+
+        // Kiểm tra sự tồn tại của người dùng
+        //kiểm tra xem đối tượng Optional<User> (optionalUser) có chứa một người dùng hay không.
+        if (optionalUser.isPresent()) {
             authenticationResponse.setJwt(jwtToken);
             authenticationResponse.setUserID(optionalUser.get().getId());
             authenticationResponse.setUserRole(optionalUser.get().getUserRole());
         }
 
         return authenticationResponse;
-
     }
 }
